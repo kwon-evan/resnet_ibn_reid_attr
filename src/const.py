@@ -1,6 +1,6 @@
 DATA_ROOT = "/home/kwon/Datasets/Korean-ReID-Dataset/"
 
-NUM_CLASSES = 1004
+NUM_CLASSES = 1025
 
 LABEL_DICT = {
     "is_male": [True, False],

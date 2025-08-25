@@ -41,6 +41,12 @@ class ReIDAttrDataModule(L.LightningDataModule):
                     root_dir=self.data_dir,
                     transform=self.transform,
                 )
+            case "validate":
+                self.val = ReIDAttrDataset(
+                    f"{self.data_dir}/val.csv",
+                    root_dir=self.data_dir,
+                    transform=self.transform,
+                )
             case "test":
                 self.test = ReIDAttrDataset(
                     f"{self.data_dir}/test.csv",

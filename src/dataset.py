@@ -5,7 +5,7 @@ import pandas as pd
 from PIL import Image
 from torch.utils.data import Dataset
 
-from .const import LABEL_DICT
+from .const import LABEL_DICT, NUM_CLASSES
 
 
 class ReIDAttrDataset(Dataset):
@@ -15,11 +15,9 @@ class ReIDAttrDataset(Dataset):
         self.root_dir = root_dir
         self.transform = transform
 
-        self.id2label = {id_: idx for idx, id_ in enumerate(self.df["@ID"].unique())}
-
     @property
     def num_persons(self):
-        return len(self.id2label)
+        return NUM_CLASSES
 
     def __len__(self):
         return len(self.df)
@@ -37,8 +35,12 @@ class ReIDAttrDataset(Dataset):
         )  # XML → PNG 치환
 
         # 속성(Attribute) 라벨 (필요하면 tensor로 변환해서 리턴)
+        # @ID에서 숫자 부분 추출 (H00001 -> 1)
+        raw_id = int(row["@ID"][1:])
+        person_id = raw_id - 1
+
         attributes = {
-            "person_id": self.id2label[row["@ID"]],
+            "person_id": person_id,
             "is_male": row["is_male"],
             "age": row["age"],
             "tall": row["tall"],

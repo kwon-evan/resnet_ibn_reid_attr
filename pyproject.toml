@@ -14,4 +14,5 @@ dependencies = [
     "tensorboardx>=2.6.4",
     "torch>=2.8.0",
     "torchvision>=0.23.0",
+    "torchmetrics>=1.0.0",
 ]
