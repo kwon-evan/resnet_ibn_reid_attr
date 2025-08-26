@@ -1,6 +1,13 @@
 import argparse
+
 import lightning as L
-from lightning.pytorch.callbacks import BatchSizeFinder, EarlyStopping, RichProgressBar
+from lightning.pytorch.callbacks import (
+    BatchSizeFinder,
+    Callback,
+    EarlyStopping,
+    ModelCheckpoint,
+    RichProgressBar,
+)
 from rich import print
 
 from src.const import ATTR_INFO, DATA_ROOT, NUM_CLASSES
@@ -37,7 +44,7 @@ def main():
     dm = ReIDAttrDataModule(DATA_ROOT)
     ls = LightningSystem(num_persons=NUM_CLASSES, attr_info=ATTR_INFO)
 
-    callbacks = [
+    callbacks: list[Callback] = [
         RichProgressBar(),
     ]
 
@@ -46,6 +53,13 @@ def main():
             [
                 EarlyStopping(monitor="val_loss", mode="min", patience=5),
                 BatchSizeFinder(),
+                ModelCheckpoint(
+                    dirpath="checkpoints",
+                    monitor="val_loss",
+                    mode="min",
+                    filename="resnet-ibn-{epoch}-{val_loss:.2f}-{val_avg_accuracy:.2f}-{val_mAP:.2f}",
+                    save_top_k=3,
+                ),
             ]
         )
 
