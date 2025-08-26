@@ -93,7 +93,7 @@ class LightningSystem(L.LightningModule):
             embeddings, logits_id, triplet_data, attr_logits, attrs
         )
         loss = {f"train_{k}": v for k, v in loss_dict.items()}
-        self.log_dict(loss, prog_bar=True)
+        self.log_dict(loss, prog_bar=True, sync_dist=True)
 
         return loss_dict["loss"]
 
@@ -117,7 +117,7 @@ class LightningSystem(L.LightningModule):
             embeddings, logits_id, triplet_data, attr_logits, attrs, is_train=False
         )
         loss = {f"val_{k}": v for k, v in loss_dict.items()}
-        self.log_dict(loss, prog_bar=True)
+        self.log_dict(loss, prog_bar=True, sync_dist=True)
 
         self.val_embeddings.append(embeddings.detach())
         self.val_person_ids.append(person_ids.detach())
@@ -138,7 +138,7 @@ class LightningSystem(L.LightningModule):
             embeddings, logits_id, triplet_data, attr_logits, attrs, is_train=False
         )
         loss = {f"test_{k}": v for k, v in loss_dict.items()}
-        self.log_dict(loss, prog_bar=True)
+        self.log_dict(loss, prog_bar=True, sync_dist=True)
 
         self.test_embeddings.append(embeddings.detach())
         self.test_person_ids.append(person_ids.detach())
@@ -161,12 +161,12 @@ class LightningSystem(L.LightningModule):
 
         # Person ID accuracy
         id_acc = self.reid_metrics.compute_id_accuracy()
-        self.log("val_id_accuracy", id_acc, prog_bar=True)
+        self.log("val_id_accuracy", id_acc, prog_bar=True, sync_dist=True)
 
         # Attribute metrics
         attr_metrics = self.par_metrics.compute()
         for metric_name, metric_value in attr_metrics.items():
-            self.log(f"val_{metric_name}", metric_value, prog_bar=True)
+            self.log(f"val_{metric_name}", metric_value, prog_bar=True, sync_dist=True)
 
         # CMC and mAP (validation embeddings)
         if len(self.val_embeddings) > 1:
@@ -192,9 +192,9 @@ class LightningSystem(L.LightningModule):
                     query_embeddings, query_ids, gallery_embeddings, gallery_ids
                 )
 
-                self.log("val_mAP", map_score, prog_bar=True)
+                self.log("val_mAP", map_score, prog_bar=True, sync_dist=True)
                 for k, score in cmc_scores.items():
-                    self.log(f"val_CMC@{k}", score, prog_bar=True)
+                    self.log(f"val_CMC@{k}", score, prog_bar=True, sync_dist=True)
 
         # reset metrics
         self.reid_metrics.reset()
@@ -208,7 +208,7 @@ class LightningSystem(L.LightningModule):
         # Attribute metrics
         attr_metrics = self.par_metrics.compute()
         for metric_name, metric_value in attr_metrics.items():
-            self.log(f"test_{metric_name}", metric_value, prog_bar=True)
+            self.log(f"test_{metric_name}", metric_value, prog_bar=True, sync_dist=True)
 
         if len(self.test_embeddings) > 1:
             all_embeddings = torch.cat(self.test_embeddings, dim=0)
@@ -233,9 +233,9 @@ class LightningSystem(L.LightningModule):
                     query_embeddings, query_ids, gallery_embeddings, gallery_ids
                 )
 
-                self.log("test_mAP", map_score, prog_bar=True)
+                self.log("test_mAP", map_score, prog_bar=True, sync_dist=True)
                 for k, score in cmc_scores.items():
-                    self.log(f"test_CMC@{k}", score, prog_bar=True)
+                    self.log(f"test_CMC@{k}", score, prog_bar=True, sync_dist=True)
 
         # reset metrics
         self.reid_metrics.reset()
