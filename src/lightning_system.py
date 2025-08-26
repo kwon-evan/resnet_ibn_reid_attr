@@ -29,9 +29,10 @@ class LightningSystem(L.LightningModule):
         )
         self.criterion = ReIDAttrLoss(num_classes=num_persons, attr_info=attr_info)
 
-        # 메트릭 초기화
-        self.reid_metrics = ReIDMetrics(num_classes=num_persons)
-        self.par_metrics = PARMetrics(attr_info=attr_info)
+        self.num_persons = num_persons
+        self.attr_info = attr_info
+        self.reid_metrics = None
+        self.par_metrics = None
 
         # Validation과 Test에서 embeddings와 IDs를 저장할 리스트
         self.val_embeddings = []
@@ -95,6 +96,14 @@ class LightningSystem(L.LightningModule):
         self.log_dict(loss, prog_bar=True)
 
         return loss_dict["loss"]
+
+    def setup(self, stage: str = None):
+        if self.reid_metrics is None:
+            self.reid_metrics = ReIDMetrics(
+                num_classes=self.num_persons, device=self.device
+            )
+        if self.par_metrics is None:
+            self.par_metrics = PARMetrics(attr_info=self.attr_info, device=self.device)
 
     def validation_step(self, batch, batch_idx):
         img, attrs = batch
