@@ -7,11 +7,11 @@ from .dataset import ReIDAttrDataset
 
 
 class ReIDAttrDataModule(L.LightningDataModule):
-    def __init__(self, data_dir: str, batch_size: int = 32):
+    def __init__(self, data_dir: str, batch_size: int | None = None):
         super().__init__()
 
         self.data_dir = data_dir
-        self.batch_size = batch_size
+        self.batch_size = batch_size if batch_size is not None else 32
 
         self.num_persons = NUM_CLASSES
         self.attr_info = LABEL_DICT
