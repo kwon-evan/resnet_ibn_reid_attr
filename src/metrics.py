@@ -109,6 +109,7 @@ class PARMetrics:
         # 각 속성별 메트릭 초기화
         self.binary_metrics = {}
         self.multi_metrics = {}
+        self.regression_metrics = {}
         
         for attr_name, (attr_type, num_classes) in attr_info.items():
             if attr_type == "binary":
@@ -124,6 +125,11 @@ class PARMetrics:
                     'precision': Precision(task="multiclass", num_classes=num_classes, average="macro").to(device),
                     'recall': Recall(task="multiclass", num_classes=num_classes, average="macro").to(device),
                     'f1': F1Score(task="multiclass", num_classes=num_classes, average="macro").to(device)
+                }
+            elif attr_type == "regression":
+                self.regression_metrics[attr_name] = {
+                    'mae': [],  # Mean Absolute Error
+                    'mse': [],  # Mean Squared Error
                 }
     
     def update(self, attr_logits: dict[str, torch.Tensor], attr_labels: dict[str, torch.Tensor]):
@@ -149,6 +155,17 @@ class PARMetrics:
                 
                 for metric in self.multi_metrics[attr_name].values():
                     metric.update(preds, labels)
+                    
+            elif attr_type == "regression":
+                # Regression: direct prediction
+                preds = logits.squeeze()
+                labels = labels.float()
+                
+                mae = torch.abs(preds - labels).mean().item()
+                mse = ((preds - labels) ** 2).mean().item()
+                
+                self.regression_metrics[attr_name]['mae'].append(mae)
+                self.regression_metrics[attr_name]['mse'].append(mse)
     
     def compute(self):
         """모든 속성 메트릭 계산"""
@@ -164,7 +181,15 @@ class PARMetrics:
             for metric_name, metric in metrics.items():
                 results[f"{attr_name}_{metric_name}"] = metric.compute()
         
-        # 전체 평균 계산
+        # Regression attributes
+        for attr_name, metrics in self.regression_metrics.items():
+            if metrics['mae']:
+                results[f"{attr_name}_mae"] = torch.tensor(metrics['mae']).mean()
+            if metrics['mse']:
+                results[f"{attr_name}_mse"] = torch.tensor(metrics['mse']).mean()
+                results[f"{attr_name}_rmse"] = torch.sqrt(torch.tensor(metrics['mse']).mean())
+        
+        # 전체 평균 계산 (classification만)
         all_accuracies = [v for k, v in results.items() if k.endswith('_accuracy')]
         all_precisions = [v for k, v in results.items() if k.endswith('_precision')]
         all_recalls = [v for k, v in results.items() if k.endswith('_recall')]
@@ -190,6 +215,10 @@ class PARMetrics:
         for metrics in self.multi_metrics.values():
             for metric in metrics.values():
                 metric.reset()
+                
+        for metrics in self.regression_metrics.values():
+            metrics['mae'].clear()
+            metrics['mse'].clear()
 
 
 def compute_accuracy_from_logits(logits: torch.Tensor, targets: torch.Tensor, task: str = "multiclass"):

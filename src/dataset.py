@@ -5,7 +5,7 @@ import pandas as pd
 from PIL import Image
 from torch.utils.data import Dataset
 
-from .const import LABEL_DICT, NUM_CLASSES
+from .const import LABEL_DICT, NUM_CLASSES, REGRESSION_STATS
 
 
 class ReIDAttrDataset(Dataset):
@@ -39,11 +39,15 @@ class ReIDAttrDataset(Dataset):
         raw_id = int(row["@ID"][1:])
         person_id = raw_id - 1
 
+        # 연속값 정규화 (Min-Max normalization to [0,1])
+        age_normalized = (row["age"] - REGRESSION_STATS["age"]["min"]) / (REGRESSION_STATS["age"]["max"] - REGRESSION_STATS["age"]["min"])
+        tall_normalized = (row["tall"] - REGRESSION_STATS["tall"]["min"]) / (REGRESSION_STATS["tall"]["max"] - REGRESSION_STATS["tall"]["min"])
+        
         attributes = {
             "person_id": person_id,
             "is_male": row["is_male"],
-            "age": row["age"],
-            "tall": row["tall"],
+            "age": age_normalized,
+            "tall": tall_normalized,
             "hair_type": _convert_multi_label_to_onehot("hair_type", row["hair_type"]),
             "hair_color": _convert_multi_label_to_onehot(
                 "hair_color", row["hair_color"]

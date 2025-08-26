@@ -77,3 +77,15 @@ LABEL_DICT = {
 ATTR_INFO = {
     a: ("multi", len(b)) if len(b) > 2 else ("binary", 2) for a, b in LABEL_DICT.items()
 }
+
+# 연속값 속성 추가 (regression)
+ATTR_INFO.update({
+    "age": ("regression", 1),
+    "tall": ("regression", 1),
+})
+
+# Min-Max 정규화를 위한 범위값 (학습 데이터 기준)
+REGRESSION_STATS = {
+    "age": {"min": 17.0, "max": 65.0},
+    "tall": {"min": 150.0, "max": 194.0},
+}

@@ -39,6 +39,8 @@ class ResIBNReIDAttr(nn.Module):
                 self.attr_heads[attr] = nn.Linear(embed_dim, 1)
             elif atype == "multi":
                 self.attr_heads[attr] = nn.Linear(embed_dim, ncls)
+            elif atype == "regression":
+                self.attr_heads[attr] = nn.Linear(embed_dim, 1)
 
     def forward(self, x):
         # 1. Backbone feature
