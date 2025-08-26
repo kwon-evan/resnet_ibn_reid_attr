@@ -161,11 +161,18 @@ class LightningSystem(L.LightningModule):
 
         # Person ID accuracy
         id_acc = self.reid_metrics.compute_id_accuracy()
+        if isinstance(id_acc, torch.Tensor) and id_acc.device.type == "cpu":
+            id_acc = id_acc.to(self.device)
         self.log("val_id_accuracy", id_acc, prog_bar=True, sync_dist=True)
 
         # Attribute metrics
         attr_metrics = self.par_metrics.compute()
         for metric_name, metric_value in attr_metrics.items():
+            if (
+                isinstance(metric_value, torch.Tensor)
+                and metric_value.device.type == "cpu"
+            ):
+                metric_value = metric_value.to(self.device)
             self.log(f"val_{metric_name}", metric_value, prog_bar=True, sync_dist=True)
 
         # CMC and mAP (validation embeddings)
@@ -192,9 +199,13 @@ class LightningSystem(L.LightningModule):
                     query_embeddings, query_ids, gallery_embeddings, gallery_ids
                 )
 
-                self.log("val_mAP", map_score, prog_bar=True, sync_dist=True)
+                map_tensor = torch.tensor(map_score, device=self.device)
+                self.log("val_mAP", map_tensor, prog_bar=True, sync_dist=True)
                 for k, score in cmc_scores.items():
-                    self.log(f"val_CMC@{k}", score, prog_bar=True, sync_dist=True)
+                    score_tensor = torch.tensor(score, device=self.device)
+                    self.log(
+                        f"val_CMC@{k}", score_tensor, prog_bar=True, sync_dist=True
+                    )
 
         # reset metrics
         self.reid_metrics.reset()
@@ -208,6 +219,11 @@ class LightningSystem(L.LightningModule):
         # Attribute metrics
         attr_metrics = self.par_metrics.compute()
         for metric_name, metric_value in attr_metrics.items():
+            if (
+                isinstance(metric_value, torch.Tensor)
+                and metric_value.device.type == "cpu"
+            ):
+                metric_value = metric_value.to(self.device)
             self.log(f"test_{metric_name}", metric_value, prog_bar=True, sync_dist=True)
 
         if len(self.test_embeddings) > 1:
@@ -233,9 +249,13 @@ class LightningSystem(L.LightningModule):
                     query_embeddings, query_ids, gallery_embeddings, gallery_ids
                 )
 
-                self.log("test_mAP", map_score, prog_bar=True, sync_dist=True)
+                map_tensor = torch.tensor(map_score, device=self.device)
+                self.log("test_mAP", map_tensor, prog_bar=True, sync_dist=True)
                 for k, score in cmc_scores.items():
-                    self.log(f"test_CMC@{k}", score, prog_bar=True, sync_dist=True)
+                    score_tensor = torch.tensor(score, device=self.device)
+                    self.log(
+                        f"test_CMC@{k}", score_tensor, prog_bar=True, sync_dist=True
+                    )
 
         # reset metrics
         self.reid_metrics.reset()
