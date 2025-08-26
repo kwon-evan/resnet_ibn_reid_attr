@@ -105,7 +105,7 @@ class LightningSystem(L.LightningModule):
         triplet_data = self._generate_triplet_data(person_ids)
 
         loss_dict = self.criterion(
-            embeddings, logits_id, triplet_data, attr_logits, attrs
+            embeddings, logits_id, triplet_data, attr_logits, attrs, is_train=False
         )
         loss = {f"val_{k}": v for k, v in loss_dict.items()}
         self.log_dict(loss, prog_bar=True)
@@ -126,7 +126,7 @@ class LightningSystem(L.LightningModule):
         triplet_data = self._generate_triplet_data(person_ids)
 
         loss_dict = self.criterion(
-            embeddings, logits_id, triplet_data, attr_logits, attrs
+            embeddings, logits_id, triplet_data, attr_logits, attrs, is_train=False
         )
         loss = {f"test_{k}": v for k, v in loss_dict.items()}
         self.log_dict(loss, prog_bar=True)
@@ -138,9 +138,9 @@ class LightningSystem(L.LightningModule):
         return loss_dict["loss"]
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
+        optimizer = torch.optim.Adam(self.parameters(), lr=5e-5)
         scheduler = torch.optim.lr_scheduler.OneCycleLR(
-            optimizer, max_lr=1e-3, total_steps=self.trainer.estimated_stepping_batches
+            optimizer, max_lr=2e-4, total_steps=self.trainer.estimated_stepping_batches
         )
         return {
             "optimizer": optimizer,
