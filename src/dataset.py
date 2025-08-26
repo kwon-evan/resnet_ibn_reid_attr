@@ -11,7 +11,6 @@ from .const import LABEL_DICT, NUM_CLASSES, REGRESSION_STATS
 class ReIDAttrDataset(Dataset):
     def __init__(self, csv_file, root_dir="", transform=None):
         self.df = pd.read_csv(csv_file)
-
         self.root_dir = root_dir
         self.transform = transform
 
@@ -30,9 +29,7 @@ class ReIDAttrDataset(Dataset):
 
         # 이미지 경로
         img_path = os.path.join(self.root_dir, row["path"])
-        img = Image.open(img_path.replace(".xml", ".png")).convert(
-            "RGB"
-        )  # XML → PNG 치환
+        img = Image.open(img_path.replace(".xml", ".png")).convert("RGB")
 
         # 속성(Attribute) 라벨 (필요하면 tensor로 변환해서 리턴)
         # @ID에서 숫자 부분 추출 (H00001 -> 1)
