@@ -70,13 +70,13 @@ class LightningSystem(L.LightningModule):
             return None
 
         anchors = torch.tensor(
-            [t[0] for t in triplet_indices], device=person_ids.device
+            [t[0] for t in triplet_indices], dtype=torch.long, device=person_ids.device
         )
         positives = torch.tensor(
-            [t[1] for t in triplet_indices], device=person_ids.device
+            [t[1] for t in triplet_indices], dtype=torch.long, device=person_ids.device
         )
         negatives = torch.tensor(
-            [t[2] for t in triplet_indices], device=person_ids.device
+            [t[2] for t in triplet_indices], dtype=torch.long, device=person_ids.device
         )
 
         return (anchors, positives, negatives)
@@ -153,7 +153,14 @@ class LightningSystem(L.LightningModule):
         )
         return {
             "optimizer": optimizer,
-            "lr_scheduler": {"scheduler": scheduler, "interval": "step"},
+            "lr_scheduler": {
+                "scheduler": scheduler, 
+                "interval": "step",
+                "frequency": 1,
+                "monitor": None,
+                "strict": True,
+                "name": "OneCycleLR"
+            },
         }
 
     def on_validation_epoch_end(self):

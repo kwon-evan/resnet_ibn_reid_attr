@@ -80,6 +80,10 @@ def main():
     trainer = L.Trainer(
         precision="16-mixed",
         callbacks=callbacks,
+        accumulate_grad_batches=8,
+        gradient_clip_val=1.0,
+        max_epochs=100,
+        deterministic=False,  # Allow for better performance
     )
 
     match args.mode:

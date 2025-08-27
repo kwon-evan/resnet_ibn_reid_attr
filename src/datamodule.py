@@ -8,13 +8,13 @@ from .dataset import ReIDAttrDataset
 
 class ReIDAttrDataModule(L.LightningDataModule):
     def __init__(
-        self, 
-        data_dir: str, 
+        self,
+        data_dir: str,
         batch_size: int | None = None,
         num_workers: int = 12,
         pin_memory: bool = True,
         persistent_workers: bool = True,
-        prefetch_factor: int = 4
+        prefetch_factor: int = 4,
     ):
         super().__init__()
 
@@ -70,34 +70,34 @@ class ReIDAttrDataModule(L.LightningDataModule):
 
     def train_dataloader(self):
         return DataLoader(
-            self.train, 
-            num_workers=self.num_workers, 
-            batch_size=self.batch_size, 
+            self.train,
+            num_workers=self.num_workers,
+            batch_size=self.batch_size,
             shuffle=True,
             pin_memory=self.pin_memory,
             persistent_workers=self.persistent_workers,
             prefetch_factor=self.prefetch_factor,
-            drop_last=True  # 배치 크기 일관성을 위해
+            drop_last=True,  # 배치 크기 일관성을 위해
         )
 
     def val_dataloader(self):
         return DataLoader(
-            self.val, 
-            num_workers=self.num_workers, 
+            self.val,
+            num_workers=self.num_workers,
             batch_size=self.batch_size,
             pin_memory=self.pin_memory,
             persistent_workers=self.persistent_workers,
-            prefetch_factor=self.prefetch_factor
+            prefetch_factor=self.prefetch_factor,
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.test, 
-            num_workers=self.num_workers, 
+            self.test,
+            num_workers=self.num_workers,
             batch_size=self.batch_size,
             pin_memory=self.pin_memory,
             persistent_workers=self.persistent_workers,
-            prefetch_factor=self.prefetch_factor
+            prefetch_factor=self.prefetch_factor,
         )
 
     def on_exception(self, exception):
